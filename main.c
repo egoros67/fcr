@@ -5,6 +5,14 @@
 #include<strings.h>
 #include<stdio.h>
 #include<stdlib.h>
+void dfs(int v,int c,int* color){
+	int k;
+	color[v]=c;
+	k++;
+	for(int j=0;i<n;i++){
+		if(graph[v][i]&&color[v]==0) dfs(j+1);}
+ 
+
 int main(){
 	char* inputPath ="hampster.png";
 	int iw,ih,n,c=0;
@@ -18,16 +26,18 @@ int main(){
 	for(int i=0;i<iw*ih*n;i+=4){
 		odata[c]=(pixel[i]*11+pixel[i+1]*16+5*pixel[i+2])/32;	
 		c+=1;}
-	/*int d=3;
+	int d=3;
 	for(int s=0;s<=iw*ih*n;s++){
-		for(int t=s;t<=iw*ih;t++){
+		for(int t=0;t<=iw*ih;t++){
 			
 			if (abs(odata[s]-odata[t])<20)){
 				graph[s][t]=abs(odata[s]-odata[t]);
-				
+			else{
+				graph[s][t]=0;}	
 }
 }
-}	*/
+}
+	
 char *outputPath="output.png";
 stbi_write_png(outputPath,iw,ih,1,odata,0);
 stbi_image_free(idata);

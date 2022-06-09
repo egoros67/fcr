@@ -6,53 +6,121 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
-void dfs(int v,int c,int* color,int** graph,int b){
-	int k;
-	color[v]=c;
-	k++;
-	for(int j=0;j<b;j++){
-		if(graph[v][j]&&color[v]==0) dfs(j,c,color,graph,b);}
- 	return;}
+void dfs(int v, int color, int iw, int ih, int* col, unsigned char* mat) {
+    int q,w,e,r;
+    col[v] = color;
+    if (v+iw+1 < iw*ih) {
+        q = mat[v+iw+1];
+        if ((col[v+iw+1] == 0) && (abs(mat[v] - q) < 5))
+		 dfs(v+iw+1, color, iw, ih, col, mat);
+    }
 
+    if (v-iw-1 > 0) {
+        w = mat[v-iw-1];
+        if ((col[v-iw-1] == 0) && (abs(mat[v] - w) < 5))
+		 dfs(v-iw-1, color, iw, ih, col, mat);
+    }
+
+
+    if (v-iw+1 > 0) {
+        e = mat[v-iw+1];
+        if ((col[v-iw+1] == 0) && (abs(mat[v] - e) < 5))
+		 dfs(v-iw+1, color, iw, ih, col, mat);
+    }
+
+    if (v+iw-1 < ih*iw) {
+        r = mat[v+iw-1];
+        if ((col[v+iw-1] == 0) && (abs(mat[v] - r) < 5)) 
+		dfs(v+iw-1, color, iw, ih, col, mat);
+    }
+
+}
+
+
+int RGB_to_gray(char r, char g, char b) { 
+	return (r*11+g*16+5*b)/32;	
+}
+/*--------------------------------------------------------*/
 int main(){
 	char* inputPath ="hampster.png";
-	int iw,ih,n,c=0,s,t,b;
+	int iw,ih,n,i,c=0,s,t,b,k=0,j;
+
 	unsigned char * idata = stbi_load(inputPath,&iw,&ih,&n,0);
-	int** graph =malloc(iw*ih*iw*ih*(sizeof(int)));
-	int* color=malloc(iw*ih*(sizeof(int)));
 	if (idata == NULL){
 		printf("ERROR: can't read file \n");
-		return 1;} 
-	char *pixel =idata;
+		return 1;
+	} 
+	
+	printf("iw = %d,  ih = %d, iw*ih =  %d\n", iw, ih, iw*ih);
+	int* graph = (int*)malloc(iw*ih*n*(sizeof(int)));
+	if (graph == NULL){
+		printf("ERROR: can't allocate memory for graph \n");
+		return 1;
+	} 
+	/*for (i = 0; i < iw*ih; i++) {
+		graph[i] = (int*)calloc(iw*ih, sizeof(int));
+		if (graph[i] == NULL){
+			printf("ERROR: can't allocate memory for graph %d column\n", i);
+			return 1;
+		} 
+	}
+	printf("We are here\n");*/
+	int* color = (int*)malloc(iw*ih*(sizeof(int)));
 	unsigned char* odata=malloc(iw*ih*(sizeof(unsigned char)));
-	for(int i=0;i<iw*ih*n;i+=4){
-		odata[c]=(pixel[i]*11+pixel[i+1]*16+5*pixel[i+2])/32;	
-		c+=1;}
+	if (odata == NULL){
+		printf("ERROR: can't allocate memory for output \n");
+	        return 1;
+	}
+	unsigned char* Filtered = (unsigned char*)malloc(ih*iw*sizeof(unsigned char)); 
+	char* pixel=idata;
+	
+
+	for(int i=0;i<iw*ih*n;i+=n){
+		char r = pixel[i];
+		char g = pixel[i+1];
+		char b = pixel[i+2];
+		odata[c]= RGB_to_gray (r,g,b);	
+		c+=1;
+	}
 	b=iw*ih;
-	for(s=0;s<=iw*ih;s++){
-		color[s]=0;
-		for(t=0;t<=iw*ih;t++){
-			if(abs(odata[s]-odata[t])<20){
-				graph[s][t]=1;}
-			else{	graph[s][t]=0;}	
-}
-}
+	 for (i = 2; i < ih-1; i++) {
+        for ( j = 2; j < iw-1; j++) {
+            if (odata[iw*i+j] < 100) odata[iw*i+j] = 0;
+            if (odata[iw*i+j] > 160) odata[iw*i+j] = 255;
+        }
+    } for (i = 1; i < ih-1; i++) {
+        for (j = 2; j < iw-1; j++) {
+            Filtered[iw*i+j] = 0.15*odata[iw*i+j] + 0.12*odata[iw*(i+1)+j] + 0.12*odata[iw*(i-1)+j];
+            Filtered[iw*i+j] = Filtered[iw*i+j] + 0.12*odata[iw*i+(j+1)] + 0.12*odata[iw*i+(j-1)];
+            Filtered[iw*i+j] = Filtered[iw*i+j] + 0.09*odata[iw*(i+1)+(j+1)] + 0.09*odata[iw*(i+1)+(j-1)];
+            Filtered[iw*i+j] = Filtered[iw*i+j] + 0.09*odata[iw*(i-1)+(j+1)] + 0.09*odata[iw*(i-1)+(j-1)];
+        }
+    }
+	printf("odata OK \n");
+	for(s=0;s<iw*ih;s++){
+		color[s]=0;}
+	int d=20;			
+	for(i=0;i<iw*ih;i++){
+		if(color[i]==0){
+			dfs(i,d,iw,ih,color,Filtered);
+			d=d+100;}}
+
+	printf("DFS?\n");
 
 	for(s=0;s<iw*ih;s++){
-		if(color[s]==0){
-			dfs(s,odata[s],color,graph,b);}}
-		 
-	for(s=0;s<iw*ih;s++){
-		for(t=s;t<iw*ih;t++){
-			if(color[s]==color[t]){
-				odata[t]+=1;}
-}
-}
-				
-char *outputPath="output.png";
-stbi_write_png(outputPath,iw,ih,1,odata,0);
-stbi_image_free(idata);
-stbi_image_free(odata);
-printf("Loaded image with a width of %dpx,a height of %dpx and %d channels\n",iw,ih,n);
-return 0;
+		graph[i*4]=78+color[i]+0.5*color[s-1];
+		graph[i*4+1]=46+color[i];
+		graph[i*4+2]=153+color[i];
+		graph[i*4+3]=255;}
+
+	char *outputPath="output.png";
+	free(color);
+	//free(pixel);
+	free(Filtered);
+	stbi_write_png(outputPath,iw,ih,n,odata,0);
+	stbi_image_free(idata);
+	free(odata);
+	free(graph);
+	printf("Loaded image with a width of %dpx,a height of %dpx and %d channels\n",iw,ih,n);
+	return 0;
 }

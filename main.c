@@ -43,7 +43,7 @@ int RGB_to_gray(char r, char g, char b) {
 /*--------------------------------------------------------*/
 int main(){
 	char* inputPath ="hampster.png";
-	int iw,ih,n,i,c=0,s,t,b,k=0,j;
+	int iw,ih,n,i,s,t,b,k=0,j,count=0;
 
 	unsigned char * idata = stbi_load(inputPath,&iw,&ih,&n,0);
 	if (idata == NULL){
@@ -79,8 +79,7 @@ int main(){
 		char r = pixel[i];
 		char g = pixel[i+1];
 		char b = pixel[i+2];
-		odata[c]= RGB_to_gray (r,g,b);	
-		c+=1;
+		odata[count]= RGB_to_gray (r,g,b);count+=1;	
 	}
 	b=iw*ih;
 	 for (i = 2; i < ih-1; i++) {
@@ -88,7 +87,9 @@ int main(){
             if (odata[iw*i+j] < 100) odata[iw*i+j] = 0;
             if (odata[iw*i+j] > 160) odata[iw*i+j] = 255;
         }
-    } for (i = 1; i < ih-1; i++) {
+    } 
+
+    for (i = 1; i < ih-1; i++) {
         for (j = 2; j < iw-1; j++) {
             Filtered[iw*i+j] = 0.15*odata[iw*i+j] + 0.12*odata[iw*(i+1)+j] + 0.12*odata[iw*(i-1)+j];
             Filtered[iw*i+j] = Filtered[iw*i+j] + 0.12*odata[iw*i+(j+1)] + 0.12*odata[iw*i+(j-1)];
@@ -96,6 +97,13 @@ int main(){
             Filtered[iw*i+j] = Filtered[iw*i+j] + 0.09*odata[iw*(i-1)+(j+1)] + 0.09*odata[iw*(i-1)+(j-1)];
         }
     }
+	unsigned char z,x,c;
+	for(i=2;i<ih-1;i++){
+		for(j=2;j<iw-1;j++){
+			z=Filtered[iw*(i-1)+(j-1)]-Filtered[iw*i+j];
+			x=Filtered[iw*(i-1)+j]-Filtered[iw*i+(j+1)];
+			c=sqrt(pow(z,2)-pow(x,2));
+			c=graph[iw*i+j];}}
 	printf("odata OK \n");
 	for(s=0;s<iw*ih;s++){
 		color[s]=0;}
@@ -103,7 +111,7 @@ int main(){
 	for(i=0;i<iw*ih;i++){
 		if(color[i]==0){
 			dfs(i,d,iw,ih,color,Filtered);
-			d=d+100;}}
+			d=d+25;}}
 
 	printf("DFS?\n");
 
@@ -114,13 +122,16 @@ int main(){
 		graph[i*4+3]=255;}
 
 	char *outputPath="output.png";
+	char *filteredPath="filtered.png";
 	free(color);
-	//free(pixel);
+	//free(pixel)
+	stbi_write_png(filteredPath,iw,ih,1,Filtered,0);
 	free(Filtered);
-	stbi_write_png(outputPath,iw,ih,n,odata,0);
+	stbi_write_png(outputPath,iw,ih,n,graph,0);
 	stbi_image_free(idata);
 	free(odata);
 	free(graph);
 	printf("Loaded image with a width of %dpx,a height of %dpx and %d channels\n",iw,ih,n);
 	return 0;
 }
+

@@ -106,11 +106,11 @@ int main(){
 	printf("odata OK \n");
 	for(s=0;s<iw*ih;s++){
 		color[s]=0;}
-	int d=50;			
+	int d=55;			
 	for(i=0;i<iw*ih;i++){
 		if(color[i]==0){
 			dfs(i,d,iw,ih,color,Filtered);
-			d=d+40;}}
+			d=d+50;}}
 
 	printf("DFS?\n");
 

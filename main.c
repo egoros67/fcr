@@ -52,7 +52,7 @@ int main(){
 	} 
 	
 	printf("iw = %d,  ih = %d, iw*ih =  %d\n", iw, ih, iw*ih);
-	int* graph = (int*)malloc(iw*ih*n*(sizeof(int)));
+	unsigned char* graph = (unsigned char*)malloc(iw*ih*n*(sizeof(unsigned char)));
 	if (graph == NULL){
 		printf("ERROR: can't allocate memory for graph \n");
 		return 1;
@@ -72,13 +72,12 @@ int main(){
 	        return 1;
 	}
 	unsigned char* Filtered = (unsigned char*)malloc(ih*iw*sizeof(unsigned char)); 
-	char* pixel=idata;
 	
 
 	for(int i=0;i<iw*ih*n;i+=n){
-		char r = pixel[i];
-		char g = pixel[i+1];
-		char b = pixel[i+2];
+		char r = idata[i];
+		char g = idata[i+1];
+		char b = idata[i+2];
 		odata[count]= RGB_to_gray (r,g,b);count+=1;	
 	}
 	b=iw*ih;
@@ -103,15 +102,15 @@ int main(){
 			z=Filtered[iw*(i-1)+(j-1)]-Filtered[iw*i+j];
 			x=Filtered[iw*(i-1)+j]-Filtered[iw*i+(j+1)];
 			c=sqrt(pow(z,2)-pow(x,2));
-			c=graph[iw*i+j];}}
+			odata[iw*i+j]=c;}}
 	printf("odata OK \n");
 	for(s=0;s<iw*ih;s++){
 		color[s]=0;}
-	int d=20;			
+	int d=50;			
 	for(i=0;i<iw*ih;i++){
 		if(color[i]==0){
 			dfs(i,d,iw,ih,color,Filtered);
-			d=d+25;}}
+			d=d+40;}}
 
 	printf("DFS?\n");
 
